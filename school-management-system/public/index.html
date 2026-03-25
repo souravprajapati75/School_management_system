@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>School Management System</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════ SIDEBAR ══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo-icon">🎓</div>
+    <h1>Vidya School</h1>
+    <p>Management System v1.0</p>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" data-page="dashboard">
+      <span class="icon">🏠</span><span>Dashboard</span>
+    </div>
+
+    <div class="nav-section-label">Academic</div>
+    <div class="nav-item" data-page="students">
+      <span class="icon">👨‍🎓</span><span>Students</span>
+    </div>
+    <div class="nav-item" data-page="attendance">
+      <span class="icon">📋</span><span>Attendance</span>
+    </div>
+    <div class="nav-item" data-page="results">
+      <span class="icon">📊</span><span>Results</span>
+    </div>
+
+    <div class="nav-section-label">Finance</div>
+    <div class="nav-item" data-page="fees">
+      <span class="icon">💰</span><span>Fees</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    &copy; 2024 Vidya SMS &mdash; MVC Architecture
+  </div>
+</aside>
+
+<!-- ══════════ MAIN ══════════ -->
+<div class="main">
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <h2 id="topbar-title">Dashboard</h2>
+    <span class="topbar-meta">Academic Year 2024–25</span>
+    <span class="time-badge" id="live-clock"></span>
+  </header>
+
+  <!-- ─────────────────────────────────────────────────────────
+       PAGE: DASHBOARD
+  ───────────────────────────────────────────────────────────── -->
+  <section class="page active" id="page-dashboard">
+
+    <div class="stats-grid">
+      <div class="stat-card amber">
+        <div class="stat-icon">👨‍🎓</div>
+        <div class="stat-label">Total Students</div>
+        <div class="stat-value" id="dash-students">—</div>
+        <div class="stat-sub">Enrolled this year</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-label">Present Today</div>
+        <div class="stat-value" id="dash-attendance">—</div>
+        <div class="stat-sub">Marked today</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">📊</div>
+        <div class="stat-label">Result Entries</div>
+        <div class="stat-value" id="dash-results">—</div>
+        <div class="stat-sub">All exams</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">💳</div>
+        <div class="stat-label">Fees Collected</div>
+        <div class="stat-value" id="dash-collected">—</div>
+        <div class="stat-sub">Total paid</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Fees Pending</div>
+        <div class="stat-value" id="dash-pending">—</div>
+        <div class="stat-sub">Awaiting payment</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Recent Students</span>
+          <button class="btn btn-ghost btn-sm" onclick="navigate('students')">View All →</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Roll No</th><th>Name</th><th>Class</th><th>Phone</th></tr></thead>
+            <tbody id="recent-students"><tr><td colspan="4"><div class="empty-state"><p>Loading…</p></div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">💰 Fee Collection Progress</span>
+        </div>
+        <div style="padding:8px 0">
+          <div id="fee-progress-pct" style="font-size:.85rem;color:var(--muted);margin-bottom:10px;">Calculating…</div>
+          <div class="progress">
+            <div class="progress-bar green" id="fee-progress-bar" style="width:0%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:20px;gap:16px;flex-wrap:wrap">
+            <div class="stat-card green" style="flex:1;padding:16px">
+              <div class="stat-label">Collected</div>
+              <div class="stat-value" style="font-size:1.4rem" id="dash-collected2">—</div>
+            </div>
+            <div class="stat-card red" style="flex:1;padding:16px">
+              <div class="stat-label">Pending</div>
+              <div class="stat-value" style="font-size:1.4rem" id="dash-pending2">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       PAGE: STUDENTS
+  ───────────────────────────────────────────────────────────── -->
+  <section class="page" id="page-students">
+
+    <!-- Add / Edit Form -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title" id="student-form-title">➕ Add New Student</span>
+        <button id="cancel-edit-btn" class="btn btn-ghost btn-sm" onclick="cancelStudentEdit()" style="display:none">✖ Cancel Edit</button>
+      </div>
+      <form id="student-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" name="name" placeholder="e.g. Aarav Sharma" required />
+          </div>
+          <div class="form-group">
+            <label>Roll Number *</label>
+            <input type="text" name="roll_no" placeholder="e.g. R001" required />
+          </div>
+          <div class="form-group">
+            <label>Class *</label>
+            <select name="class" required>
+              <option value="">— Select —</option>
+              <option>1</option><option>2</option><option>3</option><option>4</option>
+              <option>5</option><option>6</option><option>7</option><option>8</option>
+              <option>9</option><option>10</option><option>11</option><option>12</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Section *</label>
+            <select name="section" required>
+              <option value="">— Select —</option>
+              <option>A</option><option>B</option><option>C</option><option>D</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Gender *</label>
+            <select name="gender" required>
+              <option value="">— Select —</option>
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date of Birth *</label>
+            <input type="date" name="dob" required />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" placeholder="student@example.com" />
+          </div>
+          <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" name="phone" placeholder="10-digit number" />
+          </div>
+          <div class="form-group form-full">
+            <label>Address</label>
+            <textarea name="address" placeholder="Full residential address…"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:20px">
+          <button type="submit" class="btn btn-primary">➕ Add Student</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Student List -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">👨‍🎓 Student Directory</span>
+        <span id="student-count" style="font-size:.8rem;color:var(--muted)"></span>
+      </div>
+      <div class="filter-bar">
+        <input type="text"  id="s-search"  placeholder="🔍 Search name / roll…" oninput="filterStudents()" />
+        <select id="s-class"   onchange="filterStudents()">
+          <option value="">All Classes</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+        <select id="s-section" onchange="filterStudents()">
+          <option value="">All Sections</option>
+          <option>A</option><option>B</option><option>C</option><option>D</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="filterStudents()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Roll No</th><th>Name</th><th>Class</th><th>Section</th>
+              <th>Gender</th><th>DOB</th><th>Phone</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="student-tbody"><tr><td colspan="8"><div class="empty-state"><p>Loading…</p></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       PAGE: ATTENDANCE
+  ───────────────────────────────────────────────────────────── -->
+  <section class="page" id="page-attendance">
+
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);max-width:600px">
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-label">Present</div>
+        <div class="stat-value" id="att-present">—</div>
+        <div class="stat-sub">Today</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">❌</div>
+        <div class="stat-label">Absent</div>
+        <div class="stat-value" id="att-absent">—</div>
+        <div class="stat-sub">Today</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-label">Late</div>
+        <div class="stat-value" id="att-late">—</div>
+        <div class="stat-sub">Today</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Mark Form -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">✅ Mark Attendance</span></div>
+        <form id="attendance-form">
+          <div class="form-grid" style="grid-template-columns:1fr">
+            <div class="form-group">
+              <label>Student *</label>
+              <select id="att-student-id" name="student_id" required>
+                <option value="">— Select Student —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date *</label>
+              <input type="date" name="date" required />
+            </div>
+            <div class="form-group">
+              <label>Status *</label>
+              <select name="status" required>
+                <option value="">— Select Status —</option>
+                <option>Present</option><option>Absent</option><option>Late</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Remarks</label>
+              <input type="text" name="remarks" placeholder="Optional notes…" />
+            </div>
+          </div>
+          <div style="margin-top:20px">
+            <button type="submit" class="btn btn-primary">✅ Mark Attendance</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Quick note -->
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:200px">
+        <div style="font-size:3rem;margin-bottom:12px">📋</div>
+        <div style="font-family:var(--font-head);font-size:1.1rem;margin-bottom:8px">Daily Attendance</div>
+        <div style="color:var(--muted);font-size:.85rem;max-width:280px">
+          Mark attendance for each student daily. Duplicate entries for the same date are automatically updated.
+        </div>
+      </div>
+    </div>
+
+    <!-- Attendance List -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Attendance Records</span>
+        <span id="att-count" style="font-size:.8rem;color:var(--muted)"></span>
+      </div>
+      <div class="filter-bar">
+        <select id="a-student" onchange="filterAttendance()">
+          <option value="">All Students</option>
+        </select>
+        <input type="date" id="a-date" onchange="filterAttendance()" />
+        <select id="a-status" onchange="filterAttendance()">
+          <option value="">All Statuses</option>
+          <option>Present</option><option>Absent</option><option>Late</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="filterAttendance()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Roll No</th><th>Student</th><th>Class</th><th>Status</th><th>Remarks</th></tr>
+          </thead>
+          <tbody id="att-tbody"><tr><td colspan="6"><div class="empty-state"><p>Loading…</p></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       PAGE: RESULTS
+  ───────────────────────────────────────────────────────────── -->
+  <section class="page" id="page-results">
+
+    <div class="grid-2">
+      <!-- Add Result Form -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">📝 Add Result</span></div>
+        <form id="result-form">
+          <div class="form-grid" style="grid-template-columns:1fr">
+            <div class="form-group">
+              <label>Student *</label>
+              <select id="res-student-id" name="student_id" required>
+                <option value="">— Select Student —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Subject *</label>
+              <select name="subject" required>
+                <option value="">— Select Subject —</option>
+                <option>Mathematics</option><option>Science</option><option>English</option>
+                <option>Hindi</option><option>Social Studies</option><option>Computer Science</option>
+                <option>Physics</option><option>Chemistry</option><option>Biology</option>
+                <option>History</option><option>Geography</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Exam Type *</label>
+              <select name="exam_type" required>
+                <option value="">— Select —</option>
+                <option>Unit Test</option><option>Mid Term</option><option>Final</option>
+              </select>
+            </div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr">
+              <div class="form-group">
+                <label>Marks Obtained *</label>
+                <input type="number" name="marks" min="0" max="100" step="0.5" placeholder="e.g. 87" required />
+              </div>
+              <div class="form-group">
+                <label>Max Marks</label>
+                <input type="number" name="max_marks" value="100" min="1" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Exam Date *</label>
+              <input type="date" name="exam_date" required />
+            </div>
+          </div>
+          <div style="margin-top:20px">
+            <button type="submit" class="btn btn-primary">💾 Save Result</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Grade scale info card -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">📐 Grading Scale</span></div>
+        <table>
+          <thead><tr><th>Percentage</th><th>Grade</th><th>Remark</th></tr></thead>
+          <tbody>
+            <tr><td>90% – 100%</td><td><span class="badge badge-a">A+</span></td><td>Outstanding</td></tr>
+            <tr><td>80% – 89%</td><td><span class="badge badge-a">A</span></td><td>Excellent</td></tr>
+            <tr><td>70% – 79%</td><td><span class="badge badge-b">B+</span></td><td>Very Good</td></tr>
+            <tr><td>60% – 69%</td><td><span class="badge badge-b">B</span></td><td>Good</td></tr>
+            <tr><td>50% – 59%</td><td><span class="badge badge-c">C+</span></td><td>Average</td></tr>
+            <tr><td>40% – 49%</td><td><span class="badge badge-c">C</span></td><td>Below Average</td></tr>
+            <tr><td>Below 40%</td><td><span class="badge badge-f">F</span></td><td>Fail</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;padding:12px;background:var(--navy-3);border-radius:8px;font-size:.8rem;color:var(--muted)">
+          💡 Grades are automatically computed from the marks and max marks entered.
+        </div>
+      </div>
+    </div>
+
+    <!-- Results List -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📊 Result Records</span>
+        <span id="result-count" style="font-size:.8rem;color:var(--muted)"></span>
+      </div>
+      <div class="filter-bar">
+        <select id="r-student" onchange="filterResults()">
+          <option value="">All Students</option>
+        </select>
+        <select id="r-exam-type" onchange="filterResults()">
+          <option value="">All Exam Types</option>
+          <option>Unit Test</option><option>Mid Term</option><option>Final</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="filterResults()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Roll No</th><th>Student</th><th>Subject</th><th>Exam</th><th>Marks</th><th>%</th><th>Grade</th></tr>
+          </thead>
+          <tbody id="result-tbody"><tr><td colspan="8"><div class="empty-state"><p>Loading…</p></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─────────────────────────────────────────────────────────
+       PAGE: FEES
+  ───────────────────────────────────────────────────────────── -->
+  <section class="page" id="page-fees">
+
+    <div class="stats-grid">
+      <div class="stat-card amber">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Total Billed</div>
+        <div class="stat-value" id="f-total">—</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">💳</div>
+        <div class="stat-label">Collected</div>
+        <div class="stat-value" id="f-collected">—</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="f-pending">—</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">🚨</div>
+        <div class="stat-label">Overdue</div>
+        <div class="stat-value" id="f-overdue">—</div>
+      </div>
+    </div>
+
+    <!-- Fee Form -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">💰 Add Fee Record</span></div>
+      <form id="fee-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Student *</label>
+            <select id="fee-student-id" name="student_id" required>
+              <option value="">— Select Student —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fee Type *</label>
+            <select name="fee_type" required>
+              <option value="">— Select Type —</option>
+              <option>Tuition</option><option>Transport</option><option>Library</option>
+              <option>Lab</option><option>Sports</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount (₹) *</label>
+            <input type="number" name="amount" min="1" step="0.01" placeholder="e.g. 5000" required />
+          </div>
+          <div class="form-group">
+            <label>Due Date *</label>
+            <input type="date" name="due_date" required />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Payment Mode</label>
+            <select name="payment_mode">
+              <option value="">— None —</option>
+              <option>Cash</option><option>Online</option><option>Cheque</option><option>DD</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Paid Date</label>
+            <input type="date" name="paid_date" />
+          </div>
+          <div class="form-group">
+            <label>Remarks</label>
+            <input type="text" name="remarks" placeholder="Optional note…" />
+          </div>
+        </div>
+        <div style="margin-top:20px">
+          <button type="submit" class="btn btn-primary">💾 Add Fee Record</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Fee List -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📄 Fee Records</span>
+        <span id="fee-count" style="font-size:.8rem;color:var(--muted)"></span>
+      </div>
+      <div class="filter-bar">
+        <select id="f-status" onchange="filterFees()">
+          <option value="">All Statuses</option>
+          <option>Paid</option><option>Pending</option><option>Overdue</option>
+        </select>
+        <select id="f-type" onchange="filterFees()">
+          <option value="">All Types</option>
+          <option>Tuition</option><option>Transport</option><option>Library</option>
+          <option>Lab</option><option>Sports</option><option>Other</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="filterFees()">🔄 Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Roll No</th><th>Student</th><th>Type</th><th>Amount</th><th>Due Date</th><th>Paid Date</th><th>Status</th><th>Mode</th><th>Action</th></tr>
+          </thead>
+          <tbody id="fee-tbody"><tr><td colspan="9"><div class="empty-state"><p>Loading…</p></div></td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+</div><!-- /main -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
